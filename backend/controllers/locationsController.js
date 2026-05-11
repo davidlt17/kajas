@@ -1,0 +1,71 @@
+const db = require('../db');
+
+exports.getAllLocations = async (req, res) => {
+    try {
+        const result = await db.query(
+            'SELECT * FROM locations WHERE user_id = $1 ORDER BY nombre ASC',
+            [req.user.id]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener ubicaciones' });
+    }
+};
+
+exports.getLocationById = async (req, res) => {
+    try {
+        const result = await db.query(
+            'SELECT * FROM locations WHERE id = $1 AND user_id = $2',
+            [req.params.id, req.user.id]
+        );
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Ubicación no encontrada' });
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener ubicación' });
+    }
+};
+
+exports.createLocation = async (req, res) => {
+    const { nombre, descripcion, foto_url } = req.body;
+    try {
+        const result = await db.query(
+            'INSERT INTO locations (nombre, descripcion, foto_url, user_id) VALUES ($1, $2, $3, $4) RETURNING *',
+            [nombre, descripcion, foto_url, req.user.id]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al crear ubicación' });
+    }
+};
+
+exports.updateLocation = async (req, res) => {
+    const { nombre, descripcion, foto_url } = req.body;
+    try {
+        const result = await db.query(
+            'UPDATE locations SET nombre = $1, descripcion = $2, foto_url = $3 WHERE id = $4 AND user_id = $5 RETURNING *',
+            [nombre, descripcion, foto_url, req.params.id, req.user.id]
+        );
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Ubicación no encontrada' });
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al actualizar ubicación' });
+    }
+};
+
+exports.deleteLocation = async (req, res) => {
+    try {
+        const result = await db.query(
+            'DELETE FROM locations WHERE id = $1 AND user_id = $2 RETURNING id',
+            [req.params.id, req.user.id]
+        );
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Ubicación no encontrada' });
+        res.json({ message: 'Ubicación eliminada' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al eliminar ubicación' });
+    }
+};
