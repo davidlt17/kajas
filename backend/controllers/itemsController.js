@@ -11,7 +11,8 @@ exports.getAllItems = async (req, res) => {
 };
 
 exports.createItem = async (req, res) => {
-    const { nombre, foto_url, cantidad, valor_estimado, caja_id } = req.body;
+    let { nombre, foto_url, cantidad, valor_estimado, caja_id } = req.body;
+    if (caja_id === '') caja_id = null;
     try {
         const result = await db.query(
             'INSERT INTO items (nombre, foto_url, cantidad, valor_estimado, caja_id, user_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',

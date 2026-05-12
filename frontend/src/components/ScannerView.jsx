@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import QRCodeScanner from './QRCodeScanner';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Zap, ZapOff, Camera } from 'lucide-react';
+import { ArrowLeft, Zap, ZapOff, Camera, Image as ImageIcon } from 'lucide-react';
+import { BrowserMultiFormatReader } from '@zxing/library';
+import { useRef } from 'react';
 
 const ScannerView = () => {
   const navigate = useNavigate();
   const [scanned, setScanned] = useState(false);
   const [torch, setTorch] = useState(false);
   const [error, setError] = useState(null);
+  const fileInputRef = useRef(null);
 
   const handleResult = (res) => {
     if (scanned) return;
@@ -25,6 +28,32 @@ const ScannerView = () => {
 
   const handleError = (err) => {
     setError(err);
+  };
+
+  const handleGalleryClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new BrowserMultiFormatReader();
+    const imageUrl = URL.createObjectURL(file);
+    
+    try {
+      const result = await reader.decodeFromImageUrl(imageUrl);
+      if (result) {
+        handleResult(result.getText());
+      }
+    } catch (err) {
+      console.error('No se pudo detectar código QR en la imagen:', err);
+      alert('No se detectó ningún código QR válido en la imagen seleccionada.');
+    } finally {
+      URL.revokeObjectURL(imageUrl);
+      // Reset input value to allow selecting the same file again
+      if (event.target) event.target.value = '';
+    }
   };
 
   return (
@@ -45,13 +74,31 @@ const ScannerView = () => {
           <h2 className="text-2xl font-black text-white tracking-tight">Escáner</h2>
         </div>
         
-        <button 
-          onClick={() => setTorch(!torch)}
-          className={`p-3 rounded-2xl backdrop-blur-xl transition-all border ${torch ? 'bg-orange-500 text-white border-orange-400 shadow-[0_0_20px_rgba(245,158,11,0.4)]' : 'bg-white/10 text-white/60 border-white/10'}`}
-        >
-          {torch ? <Zap size={20} /> : <ZapOff size={20} />}
-        </button>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={handleGalleryClick}
+            className="p-3 bg-white/10 hover:bg-white/20 rounded-2xl text-white backdrop-blur-xl transition-all border border-white/10"
+            title="Cargar desde galería"
+          >
+            <ImageIcon size={20} />
+          </button>
+          
+          <button 
+            onClick={() => setTorch(!torch)}
+            className={`p-3 rounded-2xl backdrop-blur-xl transition-all border ${torch ? 'bg-orange-500 text-white border-orange-400 shadow-[0_0_20px_rgba(245,158,11,0.4)]' : 'bg-white/10 text-white/60 border-white/10'}`}
+          >
+            {torch ? <Zap size={20} /> : <ZapOff size={20} />}
+          </button>
+        </div>
       </div>
+      
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        className="hidden" 
+        accept="image/*" 
+        onChange={handleFileChange} 
+      />
       
       <div className="flex-grow flex flex-col items-center justify-center gap-12 relative z-10">
         {/* Scanner Container */}

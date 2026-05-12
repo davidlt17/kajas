@@ -45,7 +45,8 @@ exports.getBoxById = async (req, res) => {
 };
 
 exports.createBox = async (req, res) => {
-    const { nombre, descripcion, ubicacion_id, qr_code_id } = req.body;
+    let { nombre, descripcion, ubicacion_id, qr_code_id } = req.body;
+    if (ubicacion_id === '') ubicacion_id = null;
     try {
         const qrId = qr_code_id || uuidv4();
         const result = await db.query(
@@ -59,7 +60,8 @@ exports.createBox = async (req, res) => {
     }
 };
 exports.updateBox = async (req, res) => {
-    const { nombre, descripcion, ubicacion_id } = req.body;
+    let { nombre, descripcion, ubicacion_id } = req.body;
+    if (ubicacion_id === '') ubicacion_id = null;
     try {
         const result = await db.query(
             'UPDATE boxes SET nombre = $1, descripcion = $2, ubicacion_id = $3 WHERE id = $4 AND user_id = $5 RETURNING *',
