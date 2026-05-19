@@ -45,7 +45,7 @@ exports.getAllItems = async (req, res) => {
 };
 
 exports.createItem = async (req, res) => {
-    let { nombre, foto_url, cantidad, valor_estimado, categoria, caja_id } = req.body;
+    let { nombre, foto_url, cantidad, valor_estimado, categoria, caja_id, comentario } = req.body;
     if (caja_id === '') caja_id = null;
     if (categoria === '') categoria = null;
     
@@ -55,8 +55,8 @@ exports.createItem = async (req, res) => {
 
     try {
         const result = await db.query(
-            'INSERT INTO items (nombre, foto_url, cantidad, valor_estimado, categoria, caja_id, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-            [nombre, foto_url, cantidad || 1, valor_estimado || null, categoria || null, caja_id, req.user.id]
+            'INSERT INTO items (nombre, foto_url, cantidad, valor_estimado, categoria, caja_id, user_id, comentario) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+            [nombre, foto_url, cantidad || 1, valor_estimado || null, categoria || null, caja_id, req.user.id, comentario || null]
         );
         logActivity(req.user.id, 'CREATE_ITEM', `Añadido objeto '${nombre}' (Cant: ${cantidad || 1})`);
         res.status(201).json(result.rows[0]);
@@ -68,7 +68,7 @@ exports.createItem = async (req, res) => {
 
 exports.updateItem = async (req, res) => {
     const { id } = req.params;
-    let { nombre, cantidad, foto_url, valor_estimado, categoria, caja_id } = req.body;
+    let { nombre, cantidad, foto_url, valor_estimado, categoria, caja_id, comentario } = req.body;
     if (categoria === '') categoria = null;
 
     if (foto_url && foto_url.startsWith('data:image/')) {
@@ -80,11 +80,11 @@ exports.updateItem = async (req, res) => {
     
     if (caja_id !== undefined) {
         if (caja_id === '') caja_id = null;
-        updateQuery = 'UPDATE items SET nombre = $1, cantidad = $2, foto_url = $3, valor_estimado = $4, categoria = $5, caja_id = $6 WHERE id = $7 AND user_id = $8 RETURNING *';
-        updateParams = [nombre, cantidad, foto_url || null, valor_estimado || null, categoria || null, caja_id, id, req.user.id];
+        updateQuery = 'UPDATE items SET nombre = $1, cantidad = $2, foto_url = $3, valor_estimado = $4, categoria = $5, caja_id = $6, comentario = $7 WHERE id = $8 AND user_id = $9 RETURNING *';
+        updateParams = [nombre, cantidad, foto_url || null, valor_estimado || null, categoria || null, caja_id, comentario || null, id, req.user.id];
     } else {
-        updateQuery = 'UPDATE items SET nombre = $1, cantidad = $2, foto_url = $3, valor_estimado = $4, categoria = $5 WHERE id = $6 AND user_id = $7 RETURNING *';
-        updateParams = [nombre, cantidad, foto_url || null, valor_estimado || null, categoria || null, id, req.user.id];
+        updateQuery = 'UPDATE items SET nombre = $1, cantidad = $2, foto_url = $3, valor_estimado = $4, categoria = $5, comentario = $6 WHERE id = $7 AND user_id = $8 RETURNING *';
+        updateParams = [nombre, cantidad, foto_url || null, valor_estimado || null, categoria || null, comentario || null, id, req.user.id];
     }
 
     try {

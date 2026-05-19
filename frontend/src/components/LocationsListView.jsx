@@ -72,7 +72,7 @@ const LocationsListView = () => {
           </div>
           <h3 className="text-xl font-bold text-stone-800">No hay lugares aún</h3>
           <p className="text-stone-400 mt-2 max-w-[220px]">Crea tu primer lugar (ej: Trastero) para empezar a organizar tus cajas.</p>
-          <Link to="/add-location" className="mt-8 px-8 py-4 bg-stone-800 text-white rounded-2xl font-bold hover:bg-stone-700 transition-all">
+          <Link to="/add-location" className="mt-8 px-8 py-4 bg-neutral-800 text-white rounded-2xl font-bold hover:bg-neutral-700 dark:bg-neutral-700 dark:hover:bg-neutral-600 transition-all">
             Añadir mi primer lugar
           </Link>
         </div>

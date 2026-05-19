@@ -27,7 +27,7 @@ const SearchView = () => {
     const q = query.toLowerCase();
     setResults({
       boxes: allData.boxes.filter(b => b.nombre.toLowerCase().includes(q) || b.descripcion?.toLowerCase().includes(q)),
-      items: allData.items.filter(i => i.nombre.toLowerCase().includes(q))
+      items: allData.items.filter(i => i.nombre.toLowerCase().includes(q) || i.comentario?.toLowerCase().includes(q))
     });
   }, [query, allData]);
 
@@ -102,6 +102,7 @@ const SearchView = () => {
                     <div className="flex-grow">
                       <h4 className="font-extrabold text-stone-800">{item.nombre}</h4>
                       <p className="text-[11px] text-stone-400 font-bold uppercase">En caja #{item.caja_id?.slice(0, 4)}</p>
+                      {item.comentario && <p className="text-xs text-stone-400 italic mt-1">💬 {item.comentario}</p>}
                     </div>
                   </div>
                 ))}

@@ -102,7 +102,7 @@ const BoxForm = ({ onCreated }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-3xl shadow-cozy animate-slide-up">
       <div className="space-y-2">
-        <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+        <label className="text-sm font-bold text-stone-700 flex items-center gap-2">
           <Type size={16} className="text-cozy-500" /> Nombre de la caja
         </label>
         <input
@@ -116,7 +116,7 @@ const BoxForm = ({ onCreated }) => {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+        <label className="text-sm font-bold text-stone-700 flex items-center gap-2">
           <MapPin size={16} className="text-cozy-500" /> Ubicación
         </label>
         <select
@@ -133,7 +133,7 @@ const BoxForm = ({ onCreated }) => {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+        <label className="text-sm font-bold text-stone-700 flex items-center gap-2">
           <FileText size={16} className="text-cozy-500" /> Descripción
         </label>
         <textarea
@@ -145,7 +145,7 @@ const BoxForm = ({ onCreated }) => {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+        <label className="text-sm font-bold text-stone-700 flex items-center gap-2">
           <Camera size={16} className="text-cozy-500" /> Portada de la caja (Opcional)
         </label>
         

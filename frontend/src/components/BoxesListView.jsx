@@ -124,7 +124,9 @@ const BoxesListView = () => {
               <h3 className="font-black text-stone-800 truncate text-xs">{box.nombre}</h3>
               <div className="flex items-center gap-1 mt-0.5">
                 <Package size={8} className="text-stone-300" />
-                <span className="text-[9px] text-stone-400 font-bold uppercase tracking-wide">Objetos</span>
+                <span className="text-[9px] text-stone-400 font-bold uppercase tracking-wide">
+                  {box.item_count !== undefined ? box.item_count : 0} {box.item_count === 1 ? 'objeto' : 'objetos'}
+                </span>
               </div>
             </Link>
           ))}

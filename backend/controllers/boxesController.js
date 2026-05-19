@@ -6,10 +6,12 @@ const { logActivity } = require('../utils/logger');
 exports.getAllBoxes = async (req, res) => {
     try {
         const result = await db.query(`
-            SELECT b.*, l.nombre as ubicacion_nombre 
+            SELECT b.*, l.nombre as ubicacion_nombre, COALESCE(SUM(i.cantidad), 0)::integer as item_count
             FROM boxes b 
             LEFT JOIN locations l ON b.ubicacion_id = l.id 
+            LEFT JOIN items i ON b.id = i.caja_id
             WHERE b.user_id = $1
+            GROUP BY b.id, l.nombre
             ORDER BY b.nombre ASC
         `, [req.user.id]);
         res.json(result.rows);

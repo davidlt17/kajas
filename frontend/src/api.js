@@ -36,6 +36,8 @@ export const createLocation = (data) => api.post('locations', data);
 export const getBoxes = () => api.get('boxes');
 export const getBox = (id) => api.get(`boxes/${id}`);
 export const createBox = (data) => api.post('boxes', data);
+export const updateBox = (id, data) => api.put(`boxes/${id}`, data);
+export const deleteBox = (id) => api.delete(`boxes/${id}`);
 export const getItems = () => api.get('items');
 export const createItem = (data) => api.post('items', data);
 export const updateItem = (id, data) => api.put(`items/${id}`, data);

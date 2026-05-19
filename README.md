@@ -93,5 +93,22 @@ El sistema utiliza UUIDs para todos los identificadores, garantizando seguridad 
 -   `boxes`: Cajas vinculadas a una ubicación y a un usuario.
 -   `items`: Objetos dentro de las cajas, vinculados a un usuario.
 
+## 🔄 Historial de Actualizaciones y Mejoras
+
+En las últimas iteraciones se han introducido las siguientes correcciones y características premium:
+
+1. **Gestión de Imágenes por Archivos (Volumen Docker)**:
+   - Corregido el error de carga útil de red `413 Payload Too Large`. Las imágenes subidas (portadas y fotos de objetos) ya no se almacenan como texto Base64 pesado directamente en la base de datos.
+   - Ahora, el backend procesa las imágenes Base64, las almacena físicamente en el volumen Docker (`/uploads/`) y guarda únicamente la ruta del archivo.
+2. **Mejoras en el Asistente de Creación y Edición**:
+   - **Lugares (Ubicaciones)**: Añadido soporte para capturar foto mediante la cámara del dispositivo o subir un archivo local como portada, unificando la experiencia con el resto de formularios.
+   - **Edición y Eliminación de Cajas**: Añadido un menú contextual de tres puntos en la vista de detalle de la caja (`/boxes/:id`) con soporte completo para eliminar la caja o modificar sus datos y portada.
+3. **Comentarios en Objetos**:
+   - Posibilidad de añadir comentarios personalizados a cada objeto en el inventario al crearlos o actualizarlos.
+4. **Contadores Dinámicos de Inventario**:
+   - Corregido el conteo estático de `4 objetos` en las tarjetas de las cajas del home y del catálogo. Ahora se calcula dinámicamente sumando la cantidad real de todos los ítems de cada caja a través del backend (`SUM(cantidad)`).
+5. **Estabilidad de Desarrollo**:
+   - Activado el modo Legacy Watch (`-L`) de nodemon para que los cambios en archivos locales se sincronicen al instante dentro del entorno virtualizado Docker en sistemas Windows.
+
 ---
 **Desarrollado con un enfoque en la simplicidad y el diseño moderno.**

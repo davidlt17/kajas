@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { getBox, createItem, updateItem, deleteItem, getImageUrl, getBoxes } from '../api';
+import { getBox, createItem, updateItem, deleteItem, getImageUrl, getBoxes, getLocations, updateBox, deleteBox } from '../api';
 import { useNotification } from './NotificationContext';
 import { ArrowLeft, Package, MapPin, Tag, Plus, Search, MoreVertical, QrCode, Download, X, Trash2, Loader2, Camera } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -24,10 +24,146 @@ const BoxDetailView = () => {
   const [newItemValue, setNewItemValue] = useState('');
   const [newItemCategory, setNewItemCategory] = useState('');
   const [newItemBoxId, setNewItemBoxId] = useState('');
+  const [newItemComment, setNewItemComment] = useState('');
   const [boxes, setBoxes] = useState([]);
   const [addingItem, setAddingItem] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const qrRef = useRef();
+
+  const [showMenu, setShowMenu] = useState(false);
+  const [showEditBoxModal, setShowEditBoxModal] = useState(false);
+  const [editBoxName, setEditBoxName] = useState('');
+  const [editBoxDesc, setEditBoxDesc] = useState('');
+  const [editBoxLocId, setEditBoxLocId] = useState('');
+  const [editBoxPhoto, setEditBoxPhoto] = useState('');
+  const [locationsList, setLocationsList] = useState([]);
+  const [showBoxCamera, setShowBoxCamera] = useState(false);
+  const [boxCameraError, setBoxCameraError] = useState('');
+  const boxVideoRef = useRef(null);
+  const boxStreamRef = useRef(null);
+
+  const openEditBoxModal = async () => {
+    setEditBoxName(box.nombre || '');
+    setEditBoxDesc(box.descripcion || '');
+    setEditBoxLocId(box.ubicacion_id || '');
+    setEditBoxPhoto(box.foto_url || '');
+    setShowEditBoxModal(true);
+    
+    try {
+      const res = await getLocations();
+      setLocationsList(res.data || []);
+    } catch (err) {
+      console.error("Error al cargar ubicaciones:", err);
+    }
+  };
+
+  const startBoxCamera = async () => {
+    setShowBoxCamera(true);
+    setBoxCameraError('');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+        audio: false
+      });
+      boxStreamRef.current = stream;
+      if (boxVideoRef.current) {
+        boxVideoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      setBoxCameraError('No se pudo acceder a la cámara. Verifica los permisos.');
+    }
+  };
+
+  const stopBoxCamera = () => {
+    if (boxStreamRef.current) {
+      boxStreamRef.current.getTracks().forEach(track => track.stop());
+      boxStreamRef.current = null;
+    }
+    setShowBoxCamera(false);
+  };
+
+  const captureBoxPhoto = () => {
+    if (!boxVideoRef.current) return;
+    const video = boxVideoRef.current;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const base64Img = canvas.toDataURL('image/jpeg');
+    setEditBoxPhoto(base64Img);
+    stopBoxCamera();
+  };
+
+  const handleBoxFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+      showNotification('Por favor selecciona una imagen válida', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setEditBoxPhoto(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleUpdateBox = async (e) => {
+    e.preventDefault();
+    if (!editBoxName.trim()) return;
+
+    setLoading(true);
+    try {
+      const payload = {
+        nombre: editBoxName,
+        descripcion: editBoxDesc || '',
+        ubicacion_id: editBoxLocId || null,
+        foto_url: editBoxPhoto || ''
+      };
+
+      await updateBox(box.id, payload);
+      const updatedBoxRes = await getBox(box.id);
+      setBox(updatedBoxRes.data);
+      setItems(updatedBoxRes.data.items || []);
+      
+      showNotification('Caja actualizada correctamente', 'success');
+      setShowEditBoxModal(false);
+      stopBoxCamera();
+    } catch (error) {
+      console.error("Error al actualizar la caja:", error);
+      showNotification('Error al actualizar la caja', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteBox = async () => {
+    if (!window.confirm(`¿Seguro que quieres eliminar la caja "${box.nombre}" y todos sus objetos?`)) return;
+    
+    try {
+      await deleteBox(box.id);
+      showNotification('Caja eliminada correctamente', 'success');
+      navigate('/');
+    } catch (error) {
+      console.error("Error al eliminar la caja:", error);
+      showNotification('Error al eliminar la caja', 'error');
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (boxStreamRef.current) {
+        boxStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   const openAddModal = () => {
     setEditingItem(null);
@@ -37,6 +173,7 @@ const BoxDetailView = () => {
     setNewItemValue('');
     setNewItemCategory('');
     setNewItemBoxId('');
+    setNewItemComment('');
     setShowAddItemModal(true);
   };
 
@@ -48,6 +185,7 @@ const BoxDetailView = () => {
     setNewItemValue(item.valor_estimado || '');
     setNewItemCategory(item.categoria || '');
     setNewItemBoxId(item.caja_id || '');
+    setNewItemComment(item.comentario || '');
     setShowAddItemModal(true);
   };
 
@@ -120,6 +258,7 @@ const BoxDetailView = () => {
     setNewItemValue('');
     setNewItemCategory('');
     setNewItemBoxId('');
+    setNewItemComment('');
     setEditingItem(null);
   };
 
@@ -206,7 +345,8 @@ const BoxDetailView = () => {
         foto_url: newItemPhoto || '',
         valor_estimado: newItemValue ? parseFloat(newItemValue) : null,
         categoria: newItemCategory || null,
-        caja_id: newItemBoxId || box.id
+        caja_id: newItemBoxId || box.id,
+        comentario: newItemComment || ''
       };
 
       if (editingItem) {
@@ -261,7 +401,7 @@ const BoxDetailView = () => {
   if (!box) {
     return (
       <div className="p-6 text-center">
-        <h2 className="text-xl font-bold text-gray-800">Caja no encontrada</h2>
+        <h2 className="text-xl font-bold text-stone-800">Caja no encontrada</h2>
         <button onClick={() => navigate('/')} className="mt-4 text-orange-600 font-bold">Volver al inicio</button>
       </div>
     );
@@ -289,11 +429,34 @@ const BoxDetailView = () => {
           <ArrowLeft size={20} />
         </button>
 
-        <button 
-          className="absolute top-6 right-6 p-3 bg-white/80 backdrop-blur-md rounded-2xl text-stone-800 shadow-lg hover:bg-white transition-all"
-        >
-          <MoreVertical size={20} />
-        </button>
+        <div className="absolute top-6 right-6 z-20">
+          <button 
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-3 bg-white/80 backdrop-blur-md rounded-2xl text-stone-800 shadow-lg hover:bg-white transition-all"
+          >
+            <MoreVertical size={20} />
+          </button>
+          
+          {showMenu && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)}></div>
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-stone-100 py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-150">
+                <button 
+                  onClick={() => { setShowMenu(false); openEditBoxModal(); }}
+                  className="w-full text-left px-4 py-3 text-sm font-bold text-stone-700 hover:bg-stone-50 hover:text-orange-500 transition-colors flex items-center gap-2"
+                >
+                  ✏️ Editar caja
+                </button>
+                <button 
+                  onClick={() => { setShowMenu(false); handleDeleteBox(); }}
+                  className="w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                >
+                  🗑️ Eliminar caja
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Content Area */}
@@ -388,6 +551,11 @@ const BoxDetailView = () => {
                           </span>
                         )}
                       </div>
+                      {item.comentario && (
+                        <p className="text-stone-400 text-xs font-medium mt-1.5 italic bg-stone-50/50 p-2 rounded-xl border border-stone-100/40">
+                          💬 {item.comentario}
+                        </p>
+                      )}
                     </div>
                     <button 
                       onClick={(e) => handleDeleteItem(item.id, e)}
@@ -433,7 +601,7 @@ const BoxDetailView = () => {
             </div>
             
             <div className="flex justify-center mb-8">
-              <div ref={qrRef} className="p-4 bg-white rounded-2xl border-2 border-stone-100 shadow-sm">
+              <div ref={qrRef} className="p-4 bg-[#ffffff] rounded-2xl border-2 border-stone-200 shadow-sm">
                 <QRCodeCanvas 
                   value={box.qr_code_id} 
                   size={200} 
@@ -627,12 +795,168 @@ const BoxDetailView = () => {
                     )}
                   </div>
 
+                  <div>
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Comentarios o notas</label>
+                    <textarea 
+                      value={newItemComment}
+                      onChange={(e) => setNewItemComment(e.target.value)}
+                      className="cozy-input w-full min-h-[80px] resize-none"
+                      placeholder="Ej. Guardado con su funda protectora, requiere pilas AA, etc."
+                    />
+                  </div>
+
                   <button 
                     type="submit"
                     disabled={addingItem || !newItemName.trim()}
                     className="btn-primary w-full mt-4 flex justify-center items-center gap-2"
                   >
                     {addingItem ? <Loader2 size={20} className="animate-spin" /> : (editingItem ? 'Guardar Cambios' : <><Plus size={20} /> Guardar Objeto</>)}
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar Caja */}
+      {showEditBoxModal && (
+        <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh]">
+            <button 
+              onClick={() => { stopBoxCamera(); setShowEditBoxModal(false); }}
+              className="absolute top-6 right-6 p-2 bg-stone-100 hover:bg-stone-200 text-stone-500 rounded-full transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            {showBoxCamera ? (
+              <div className="space-y-4">
+                <div className="mb-4">
+                  <h3 className="text-xl font-black text-stone-800">Cámara</h3>
+                  <p className="text-sm text-stone-500 font-medium mt-1">Captura una foto para la portada</p>
+                </div>
+                <div className="relative aspect-[4/3] bg-black rounded-2xl overflow-hidden shadow-inner border border-stone-200">
+                  {boxCameraError ? (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-red-500 font-medium text-xs">
+                      <span>{boxCameraError}</span>
+                    </div>
+                  ) : (
+                    <video 
+                      ref={boxVideoRef}
+                      autoPlay
+                      playsInline
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={stopBoxCamera}
+                    className="flex-1 py-2.5 bg-stone-200 hover:bg-stone-300 text-stone-700 font-bold rounded-xl transition-all text-xs"
+                  >
+                    Cancelar
+                  </button>
+                  {!boxCameraError && (
+                    <button
+                      type="button"
+                      onClick={captureBoxPhoto}
+                      className="flex-1 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-black rounded-xl transition-all shadow-md shadow-orange-200 text-xs flex items-center justify-center gap-1"
+                    >
+                      <Camera size={14} /> Capturar
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="mb-6">
+                  <h3 className="text-xl font-black text-stone-800">Editar Caja</h3>
+                  <p className="text-sm text-stone-500 font-medium mt-1">Modifica los detalles de esta caja</p>
+                </div>
+
+                <form onSubmit={handleUpdateBox} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Nombre de la caja</label>
+                    <input 
+                      type="text" 
+                      value={editBoxName}
+                      onChange={(e) => setEditBoxName(e.target.value)}
+                      className="cozy-input w-full"
+                      placeholder="Ej. Ropa de invierno"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Ubicación</label>
+                    <select
+                      value={editBoxLocId}
+                      onChange={(e) => setEditBoxLocId(e.target.value)}
+                      className="cozy-input w-full cursor-pointer appearance-none"
+                    >
+                      <option value="">Selecciona un lugar...</option>
+                      {locationsList.map(loc => (
+                        <option key={loc.id} value={loc.id}>{loc.nombre}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Descripción (Opcional)</label>
+                    <textarea 
+                      value={editBoxDesc}
+                      onChange={(e) => setEditBoxDesc(e.target.value)}
+                      className="cozy-input w-full min-h-[80px] resize-none"
+                      placeholder="¿Qué sueles guardar aquí?"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Portada (Opcional)</label>
+                    {editBoxPhoto ? (
+                      <div className="relative w-32 h-32 mx-auto rounded-2xl overflow-hidden border border-stone-200 shadow-sm mb-2 animate-cozy">
+                        <img src={getImageUrl(editBoxPhoto)} alt="Portada vista previa" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setEditBoxPhoto('')}
+                          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-md hover:scale-105"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-3">
+                        <label className="flex-1 flex flex-col items-center justify-center py-4 bg-stone-50 border-2 border-dashed border-stone-200 rounded-2xl cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-all group">
+                          <Package className="text-stone-400 group-hover:text-orange-500 transition-colors" size={20} />
+                          <span className="text-[10px] text-stone-500 group-hover:text-orange-500 transition-colors font-bold uppercase mt-1">Archivo</span>
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            onChange={handleBoxFileChange} 
+                            className="hidden" 
+                          />
+                        </label>
+
+                        <button
+                          type="button"
+                          onClick={startBoxCamera}
+                          className="flex-1 flex flex-col items-center justify-center py-4 bg-stone-50 border-2 border-dashed border-stone-200 rounded-2xl cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-all group"
+                        >
+                          <Camera className="text-stone-400 group-hover:text-orange-500 transition-colors" size={20} />
+                          <span className="text-[10px] text-stone-500 group-hover:text-orange-500 transition-colors font-bold uppercase mt-1">Cámara</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <button 
+                    type="submit"
+                    disabled={!editBoxName.trim()}
+                    className="btn-primary w-full mt-4 flex justify-center items-center gap-2"
+                  >
+                    Guardar Cambios
                   </button>
                 </form>
               </>

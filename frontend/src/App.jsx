@@ -58,13 +58,13 @@ function App() {
         <div className="flex gap-3">
           <button 
             onClick={() => setIsSearchOpen(true)} 
-            className="p-3 bg-stone-800 text-white rounded-2xl shadow-xl hover:bg-stone-700 transition-colors flex items-center gap-2 font-bold"
+            className="p-3 bg-neutral-800 text-white rounded-2xl shadow-xl hover:bg-neutral-700 dark:bg-neutral-700 dark:hover:bg-neutral-600 transition-colors flex items-center gap-2 font-bold"
           >
             <Search size={22} /> <span className="hidden md:inline">Buscar</span>
           </button>
           <button 
             onClick={toggleTheme}
-            className="p-3 bg-white dark:bg-stone-800 rounded-2xl shadow-cozy text-stone-400 hover:text-orange-500 transition-colors hidden md:flex"
+            className="p-3 bg-white dark:bg-neutral-800 rounded-2xl shadow-cozy text-stone-400 hover:text-orange-500 transition-colors hidden md:flex"
             title="Cambiar tema"
           >
             {isDark ? <Sun size={22} /> : <Moon size={22} />}
@@ -85,7 +85,7 @@ function App() {
           <section>
             <h2 className="text-xl font-extrabold text-stone-800 mb-6 hidden lg:block">Tu Almacén</h2>
               {stats && stats.totalValue > 0 && (
-                <div className="bg-stone-800 text-white p-6 rounded-[2rem] shadow-xl mb-4 relative overflow-hidden group">
+                <div className="bg-neutral-800 text-white p-6 rounded-[2rem] shadow-xl mb-4 relative overflow-hidden group dark:bg-neutral-700">
                   <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all"></div>
                   <span className="text-xs font-bold text-stone-400 uppercase tracking-widest block mb-1">Valor Total</span>
                   <div className="text-3xl font-black">{stats.totalValue.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</div>
@@ -145,7 +145,7 @@ function App() {
           <section className="hidden lg:block space-y-4">
             <h2 className="text-xl font-extrabold text-stone-800 mb-6">Acciones Rápidas</h2>
             <div className="grid grid-cols-2 gap-4">
-              <Link to="/add-box" className="group p-6 rounded-[2.5rem] shadow-xl shadow-stone-200/50 aspect-square relative overflow-hidden flex flex-col justify-between bg-stone-800 hover:bg-stone-700 transition-all">
+              <Link to="/add-box" className="group p-6 rounded-[2.5rem] shadow-xl shadow-stone-200/50 aspect-square relative overflow-hidden flex flex-col justify-between bg-neutral-800 hover:bg-neutral-700 dark:bg-neutral-700 dark:hover:bg-neutral-600 transition-all">
                 <Package className="absolute -right-4 -top-4 text-white/10 group-hover:text-white/20 transition-colors" size={100} strokeWidth={1} />
                 <div className="bg-white/10 backdrop-blur-md w-10 h-10 rounded-xl flex items-center justify-center text-white text-xl font-bold border border-white/20">+</div>
                 <span className="relative z-10 text-sm font-black leading-tight text-white tracking-tight">Nueva<br/>Caja</span>
@@ -198,7 +198,7 @@ function App() {
                     </div>
                     <h3 className="font-extrabold text-stone-800 truncate">{box.nombre}</h3>
                     <p className="text-[11px] text-stone-400 font-bold mt-1 uppercase flex items-center gap-1">
-                      <Package size={10} /> 4 objetos
+                      <Package size={10} /> {box.item_count !== undefined ? box.item_count : 0} {box.item_count === 1 ? 'objeto' : 'objetos'}
                     </p>
                   </Link>
                 ))}
@@ -249,7 +249,7 @@ function App() {
 
           {/* Quick Actions (Solo Mobile) */}
           <div className="grid grid-cols-2 gap-4 pb-12 lg:hidden">
-            <Link to="/add-box" className="group p-6 rounded-[2.5rem] shadow-xl shadow-stone-200/50 aspect-square relative overflow-hidden flex flex-col justify-between bg-stone-800">
+            <Link to="/add-box" className="group p-6 rounded-[2.5rem] shadow-xl shadow-stone-200/50 aspect-square relative overflow-hidden flex flex-col justify-between bg-neutral-800 dark:bg-neutral-700">
               <Package className="absolute -right-4 -top-4 text-white/10" size={120} strokeWidth={1} />
               <div className="bg-white/10 backdrop-blur-md w-12 h-12 rounded-2xl flex items-center justify-center text-white text-2xl font-bold border border-white/20">+</div>
               <span className="relative z-10 text-lg font-black leading-tight text-white">Nueva<br/>Caja</span>

@@ -1,15 +1,77 @@
 @import "tailwindcss";
 
-@theme {
+@custom-variant dark (&:is(.dark *));
+
+:root {
   --color-cozy-bg: #FFF9F0;
   --color-cozy-accent: #FDBA74;
   --color-cozy-text: #78350F;
   --color-cozy-card: #FFFFFF;
   
+  --color-white-val: #ffffff;
+  --color-stone-50-val: #fafaf9;
+  --color-stone-100-val: #f5f5f4;
+  --color-stone-200-val: #e7e5e4;
+  --color-stone-300-val: #d6d3d1;
+  --color-stone-400-val: #a8a29e;
+  --color-stone-500-val: #78716c;
+  --color-stone-600-val: #57534e;
+  --color-stone-700-val: #44403c;
+  --color-stone-800-val: #292524;
+  --color-stone-900-val: #1c1917;
+
+  --shadow-cozy-val: 0 10px 30px -5px rgba(120, 53, 15, 0.08), 0 8px 15px -6px rgba(120, 53, 15, 0.05);
+  --border-cozy-card: rgba(253, 186, 116, 0.15);
+  --border-cozy-input: #FEF3C7;
+  --bg-cozy-input: #ffffff;
+}
+
+.dark {
+  --color-cozy-bg: #1c1917;
+  --color-cozy-accent: #f97316;
+  --color-cozy-text: #e7e5e4;
+  --color-cozy-card: #292524;
+
+  --color-white-val: #292524;        /* bg-white elements become card background */
+  --color-stone-50-val: #1c1917;     /* bg-stone-50 elements (body) become page background */
+  --color-stone-100-val: #3f3f37;    /* border-stone-100 elements become dark borders */
+  --color-stone-200-val: #44403c;
+  --color-stone-300-val: #57534e;
+  --color-stone-400-val: #a8a29e;    /* text-stone-400 remains medium gray */
+  --color-stone-500-val: #d6d3d1;    /* text-stone-500 becomes readable light gray */
+  --color-stone-600-val: #e7e5e4;
+  --color-stone-700-val: #f5f5f4;
+  --color-stone-800-val: #fafaf9;    /* text-stone-800 becomes bright text */
+  --color-stone-900-val: #3f3f37;    /* bg-stone-900 contrast buttons become slightly lighter dark */
+
+  --shadow-cozy-val: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+  --border-cozy-card: rgba(255, 255, 255, 0.05);
+  --border-cozy-input: #44403c;
+  --bg-cozy-input: #292524;
+}
+
+@theme {
+  --color-cozy-bg: var(--color-cozy-bg);
+  --color-cozy-accent: var(--color-cozy-accent);
+  --color-cozy-text: var(--color-cozy-text);
+  --color-cozy-card: var(--color-cozy-card);
+
+  --color-white: var(--color-white-val);
+  --color-stone-50: var(--color-stone-50-val);
+  --color-stone-100: var(--color-stone-100-val);
+  --color-stone-200: var(--color-stone-200-val);
+  --color-stone-300: var(--color-stone-300-val);
+  --color-stone-400: var(--color-stone-400-val);
+  --color-stone-500: var(--color-stone-500-val);
+  --color-stone-600: var(--color-stone-600-val);
+  --color-stone-700: var(--color-stone-700-val);
+  --color-stone-800: var(--color-stone-800-val);
+  --color-stone-900: var(--color-stone-900-val);
+
   --radius-xl: 1.5rem;
   --radius-2xl: 2.2rem;
   
-  --shadow-cozy: 0 10px 30px -5px rgba(120, 53, 15, 0.08), 0 8px 15px -6px rgba(120, 53, 15, 0.05);
+  --shadow-cozy: var(--shadow-cozy-val);
   --shadow-inner-cozy: inset 0 2px 4px 0 rgba(120, 53, 15, 0.05);
 }
 
@@ -18,16 +80,11 @@
 
   body {
     background-color: var(--color-cozy-bg);
-    color: #4B2C20;
+    color: var(--color-cozy-text);
     font-family: 'Nunito', sans-serif;
     -webkit-tap-highlight-color: transparent;
     overflow-x: hidden;
     transition: background-color 0.3s ease, color 0.3s ease;
-  }
-
-  html.dark body {
-    background-color: #1c1917;
-    color: #e7e5e4;
   }
 }
 
@@ -37,14 +94,8 @@
     border-radius: var(--radius-xl);
     padding: 1.25rem;
     box-shadow: var(--shadow-cozy);
-    border: 1px solid rgba(253, 186, 116, 0.15);
+    border: 1px solid var(--border-cozy-card);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  html.dark .cozy-card {
-    background: #292524;
-    border-color: rgba(255, 255, 255, 0.05);
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
   }
   
   .cozy-card:active {
@@ -54,22 +105,17 @@
   .cozy-input {
     width: 100%;
     padding: 1rem 1.25rem;
-    background: white;
+    background: var(--bg-cozy-input);
     border-radius: 1rem;
-    border: 2px solid #FEF3C7;
+    border: 2px solid var(--border-cozy-input);
+    color: var(--color-cozy-text);
     outline: none;
     transition: all 0.2s;
     box-shadow: var(--shadow-inner-cozy);
   }
 
-  html.dark .cozy-input {
-    background: #292524;
-    border-color: #44403c;
-    color: #f5f5f4;
-  }
-
   .cozy-input:focus {
-    border-color: #FDBA74;
+    border-color: var(--color-cozy-accent);
     box-shadow: 0 0 0 4px rgba(253, 186, 116, 0.1);
   }
 

@@ -34,7 +34,7 @@ const RegisterView = () => {
     <div className="min-h-screen bg-stone-50 flex flex-col justify-center px-6 animate-cozy">
       <div className="max-w-sm mx-auto w-full">
         <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-stone-800 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+          <div className="w-16 h-16 bg-neutral-800 dark:bg-neutral-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
             <Box size={32} className="text-white" />
           </div>
           <h1 className="text-3xl font-black text-stone-800 tracking-tight">Crea tu cuenta</h1>

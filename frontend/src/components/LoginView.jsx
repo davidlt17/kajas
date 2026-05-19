@@ -88,7 +88,7 @@ const LoginView = () => {
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full py-4 bg-stone-800 text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-stone-700 transition-all shadow-lg shadow-stone-200 mt-4 disabled:opacity-50"
+              className="w-full py-4 bg-neutral-800 text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-neutral-700 dark:bg-neutral-700 dark:hover:bg-neutral-600 transition-all shadow-lg shadow-stone-200 mt-4 disabled:opacity-50"
             >
               {loading ? <Loader2 className="animate-spin" size={20} /> : (
                 <>

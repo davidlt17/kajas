@@ -109,6 +109,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
                         <div>
                           <div className="font-bold text-stone-800">{item.nombre}</div>
                           {item.categoria && <div className="text-[10px] text-orange-600 uppercase font-black">{item.categoria}</div>}
+                          {item.comentario && <div className="text-[10px] text-stone-400 italic mt-0.5">💬 {item.comentario}</div>}
                         </div>
                         <span className="text-xs font-bold text-stone-400">Cant: {item.cantidad}</span>
                       </div>

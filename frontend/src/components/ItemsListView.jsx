@@ -20,6 +20,7 @@ const ItemsListView = () => {
   const [editItemValue, setEditItemValue] = useState('');
   const [editItemCategory, setEditItemCategory] = useState('');
   const [editItemBoxId, setEditItemBoxId] = useState('');
+  const [editItemComment, setEditItemComment] = useState('');
   const [updatingItem, setUpdatingItem] = useState(false);
   const [boxes, setBoxes] = useState([]);
 
@@ -37,6 +38,7 @@ const ItemsListView = () => {
     setEditItemValue(item.valor_estimado || '');
     setEditItemCategory(item.categoria || '');
     setEditItemBoxId(item.caja_id || '');
+    setEditItemComment(item.comentario || '');
     setShowEditModal(true);
   };
 
@@ -50,6 +52,7 @@ const ItemsListView = () => {
     setEditItemValue('');
     setEditItemCategory('');
     setEditItemBoxId('');
+    setEditItemComment('');
   };
 
   const handleFileChange = (e) => {
@@ -119,7 +122,8 @@ const ItemsListView = () => {
         foto_url: editItemPhoto,
         valor_estimado: editItemValue ? parseFloat(editItemValue) : null,
         categoria: editItemCategory,
-        caja_id: editItemBoxId
+        caja_id: editItemBoxId,
+        comentario: editItemComment || ''
       });
       setItems(items.map(i => i.id === editingItem.id ? res.data : i));
       showNotification('Objeto actualizado', 'success');
@@ -221,6 +225,11 @@ const ItemsListView = () => {
                   </span>
                 )}
               </div>
+              {item.comentario && (
+                <p className="text-[10px] text-stone-400 italic mt-1 line-clamp-1">
+                  💬 {item.comentario}
+                </p>
+              )}
               <p className="text-[10px] text-stone-400 font-bold mt-1 uppercase flex items-center gap-1">
                 <Box size={10} /> {item.caja_id ? `En Caja #${item.caja_id.slice(0, 4)}` : 'Sin caja asignada'}
               </p>
@@ -408,6 +417,16 @@ const ItemsListView = () => {
                         </button>
                       </div>
                     )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Comentarios o notas</label>
+                    <textarea 
+                      value={editItemComment}
+                      onChange={(e) => setEditItemComment(e.target.value)}
+                      className="cozy-input w-full min-h-[80px] resize-none"
+                      placeholder="Ej. Con cargador original, sin pilas, etc."
+                    />
                   </div>
 
                   <button 

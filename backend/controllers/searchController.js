@@ -22,7 +22,7 @@ exports.globalSearch = async (req, res) => {
 
         // Search items
         const itemsRes = await db.query(
-            'SELECT id, nombre, foto_url, caja_id, cantidad, categoria FROM items WHERE user_id = $1 AND (nombre ILIKE $2 OR categoria ILIKE $2) LIMIT 10',
+            'SELECT id, nombre, foto_url, caja_id, cantidad, categoria, comentario FROM items WHERE user_id = $1 AND (nombre ILIKE $2 OR categoria ILIKE $2 OR comentario ILIKE $2) LIMIT 10',
             [userId, searchTerm]
         );
 

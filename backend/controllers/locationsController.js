@@ -1,5 +1,6 @@
 const db = require('../db');
 const { logActivity } = require('../utils/logger');
+const { saveBase64Image } = require('./itemsController');
 
 exports.getAllLocations = async (req, res) => {
     try {
@@ -29,11 +30,16 @@ exports.getLocationById = async (req, res) => {
 };
 
 exports.createLocation = async (req, res) => {
-    const { nombre, descripcion, foto_url } = req.body;
+    let { nombre, descripcion, foto_url } = req.body;
+    
+    if (foto_url && foto_url.startsWith('data:image/')) {
+        foto_url = saveBase64Image(foto_url);
+    }
+
     try {
         const result = await db.query(
             'INSERT INTO locations (nombre, descripcion, foto_url, user_id) VALUES ($1, $2, $3, $4) RETURNING *',
-            [nombre, descripcion, foto_url, req.user.id]
+            [nombre, descripcion, foto_url || null, req.user.id]
         );
         logActivity(req.user.id, 'CREATE_LOCATION', `Creada la ubicación '${nombre}'`);
         res.status(201).json(result.rows[0]);
@@ -44,11 +50,16 @@ exports.createLocation = async (req, res) => {
 };
 
 exports.updateLocation = async (req, res) => {
-    const { nombre, descripcion, foto_url } = req.body;
+    let { nombre, descripcion, foto_url } = req.body;
+
+    if (foto_url && foto_url.startsWith('data:image/')) {
+        foto_url = saveBase64Image(foto_url);
+    }
+
     try {
         const result = await db.query(
             'UPDATE locations SET nombre = $1, descripcion = $2, foto_url = $3 WHERE id = $4 AND user_id = $5 RETURNING *',
-            [nombre, descripcion, foto_url, req.params.id, req.user.id]
+            [nombre, descripcion, foto_url || null, req.params.id, req.user.id]
         );
         if (result.rows.length === 0) return res.status(404).json({ error: 'Ubicación no encontrada' });
         logActivity(req.user.id, 'UPDATE_LOCATION', `Actualizada la ubicación '${nombre}'`);

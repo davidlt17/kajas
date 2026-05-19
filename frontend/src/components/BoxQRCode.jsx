@@ -5,7 +5,7 @@ const BoxQRCode = ({ boxId }) => {
   return (
     <div className="flex flex-col items-center gap-4">
       <QRCodeSVG value={url} size={256} />
-      <p className="text-sm text-gray-500">Escanea para ver el contenido</p>
+      <p className="text-sm text-stone-500">Escanea para ver el contenido</p>
     </div>
   );
 };

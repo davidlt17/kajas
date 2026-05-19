@@ -33,6 +33,7 @@ CREATE TABLE items (
     cantidad INTEGER DEFAULT 1,
     valor_estimado DECIMAL(10, 2),
     categoria VARCHAR(50),
+    comentario TEXT,
     caja_id UUID REFERENCES boxes(id) ON DELETE CASCADE,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE
 );
