@@ -27,6 +27,10 @@ api.interceptors.response.use(
 export const login = (email, password) => api.post('auth/login', { email, password });
 export const register = (email, password, nombre) => api.post('auth/register', { email, password, nombre });
 
+export const getStats = () => api.get('/stats');
+export const getActivity = () => api.get('/activity');
+export const searchGlobal = (query) => api.get(`/search?q=${query}`);
+
 export const getLocations = () => api.get('locations');
 export const createLocation = (data) => api.post('locations', data);
 export const getBoxes = () => api.get('boxes');
@@ -36,5 +40,14 @@ export const getItems = () => api.get('items');
 export const createItem = (data) => api.post('items', data);
 export const updateItem = (id, data) => api.put(`items/${id}`, data);
 export const deleteItem = (id) => api.delete(`items/${id}`);
+
+export const getImageUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  const backendBase = (import.meta.env.VITE_API_URL || 'http://localhost:3080/api').replace(/\/api\/?$/, '');
+  return `${backendBase}${url}`;
+};
 
 export default api;

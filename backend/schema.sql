@@ -21,6 +21,7 @@ CREATE TABLE boxes (
     nombre VARCHAR(100) NOT NULL,
     qr_code_id VARCHAR(100) UNIQUE NOT NULL,
     descripcion TEXT,
+    foto_url VARCHAR(255),
     ubicacion_id UUID REFERENCES locations(id) ON DELETE CASCADE,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE
 );
@@ -31,6 +32,15 @@ CREATE TABLE items (
     foto_url VARCHAR(255),
     cantidad INTEGER DEFAULT 1,
     valor_estimado DECIMAL(10, 2),
+    categoria VARCHAR(50),
     caja_id UUID REFERENCES boxes(id) ON DELETE CASCADE,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE activity_log (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    action VARCHAR(50) NOT NULL,
+    details TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

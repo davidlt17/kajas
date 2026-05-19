@@ -6,15 +6,18 @@
 
 -   **Autenticación Segura**: Registro e inicio de sesión protegidos con JWT (JSON Web Tokens).
 -   **Aislamiento de Datos Estricto**: Cada usuario solo puede ver y gestionar sus propios lugares, cajas y objetos.
--   **Gestión de Almacenamiento**:
+-   **Gestión de Almacenamiento Premium**:
     -   **Ubicaciones**: Define espacios físicos (Trastero, Garaje, Oficina).
-    -   **Cajas**: Crea cajas vinculadas a una ubicación con IDs únicos.
-    -   **Objetos**: Registra qué hay dentro de cada caja (nombre, cantidad, foto).
--   **Sistema QR Inteligente**:
-    -   **Generación**: Cada caja genera automáticamente un código QR único.
-    -   **Descarga**: Permite descargar el QR en formato imagen para imprimir y pegar en la caja real.
-    -   **Escaneo**: Escáner integrado con la cámara del dispositivo para acceder instantáneamente al detalle de una caja.
--   **Interfaz "Cozy"**: Diseño minimalista, moderno y cálido centrado en la experiencia móvil (Mobile-First).
+    -   **Cajas**: Crea cajas vinculadas a una ubicación con IDs únicos y obtén feedback visual (Confeti) al crearlas.
+    -   **Objetos**: Registra qué hay dentro (nombre, cantidad, foto), asigna un **valor económico**, clasifícalos por **categorías**, y muévelos entre cajas con facilidad.
+-   **Dashboard Analítico y Actividad**:
+    -   Visualiza el **valor total asegurado** de tu inventario.
+    -   Gráficos circulares interactivos con la distribución de tus objetos.
+    -   **Historial de Actividad**: Trazabilidad completa de tus últimos movimientos en un elegante *timeline*.
+-   **Buscador Global (Omnisearch)**: Encuentra instantáneamente cualquier caja, lugar u objeto buscando por nombre o categoría desde un modal flotante accesible globalmente.
+-   **Exportación Profesional**: Genera y descarga al instante reportes en **PDF** del inventario de cualquier caja.
+-   **Sistema QR Inteligente**: Generación, descarga y escaneo integrados (con cámara del dispositivo) para acceder a las cajas.
+-   **Diseño Moderno**: Interfaz minimalista con soporte completo para **Dark Mode** (con selector dinámico Sol/Luna) y animaciones fluidas (Mobile-First).
 
 ## 🛠️ Stack Tecnológico
 

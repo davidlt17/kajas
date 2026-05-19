@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getBoxes } from '../api';
+import { getBoxes, getImageUrl } from '../api';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { BoxPlaceholder } from './Placeholders';
 import { ArrowLeft, Search, Package, MapPin, Plus, Filter, X } from 'lucide-react';
@@ -94,37 +94,37 @@ const BoxesListView = () => {
 
       {/* Grid */}
       {loading ? (
-        <div className="grid grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-48 bg-white/50 animate-pulse rounded-[2rem]"></div>
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="h-36 bg-white/50 animate-pulse rounded-[1.5rem]"></div>
           ))}
         </div>
       ) : filteredBoxes.length > 0 ? (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
           {filteredBoxes.map(box => (
             <Link 
               key={box.id} 
               to={`/boxes/${box.id}`}
-              className="bg-white p-4 rounded-[2rem] shadow-cozy border border-white hover:border-orange-200 transition-all group"
+              className="bg-white p-3 rounded-[1.5rem] shadow-cozy border border-white hover:border-orange-200 transition-all group"
             >
-              <div className="aspect-square bg-stone-100 rounded-2xl mb-4 overflow-hidden relative">
+              <div className="aspect-square bg-stone-100 rounded-xl mb-2 overflow-hidden relative">
                 {box.foto_url ? (
                   <img 
-                    src={box.foto_url} 
+                    src={getImageUrl(box.foto_url)} 
                     alt={box.nombre}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                 ) : (
                   <BoxPlaceholder />
                 )}
-                <div className="absolute top-2 right-2 px-2 py-1 bg-white/80 backdrop-blur-sm rounded-lg text-[9px] font-black uppercase text-orange-700">
+                <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white/80 backdrop-blur-sm rounded-md text-[8px] font-black uppercase text-orange-700 truncate max-w-[85%]">
                   {box.ubicacion_nombre || 'General'}
                 </div>
               </div>
-              <h3 className="font-extrabold text-stone-800 truncate text-sm">{box.nombre}</h3>
-              <div className="flex items-center gap-1 mt-1">
-                <Package size={10} className="text-stone-300" />
-                <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wide">4 objetos</span>
+              <h3 className="font-black text-stone-800 truncate text-xs">{box.nombre}</h3>
+              <div className="flex items-center gap-1 mt-0.5">
+                <Package size={8} className="text-stone-300" />
+                <span className="text-[9px] text-stone-400 font-bold uppercase tracking-wide">Objetos</span>
               </div>
             </Link>
           ))}

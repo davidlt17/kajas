@@ -1,28 +1,39 @@
 import { useState, useEffect } from 'react';
-import { getLocations, getBoxes, getItems } from './api';
-import { Search, Package, Box, MapPin, ChevronRight, Bell, Settings, Scan, QrCode } from 'lucide-react';
+import { getLocations, getBoxes, getItems, getImageUrl, getStats, getActivity } from './api';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { Search, Package, Box, MapPin, ChevronRight, Bell, Settings, Scan, QrCode, Activity, Moon, Sun } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BoxPlaceholder } from './components/Placeholders';
+import GlobalSearch from './components/GlobalSearch';
+import { useTheme } from './components/ThemeContext';
 
 function App() {
   const navigate = useNavigate();
   const [locations, setLocations] = useState([]);
   const [boxes, setBoxes] = useState([]);
   const [items, setItems] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { isDark, toggleTheme } = useTheme();
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   const loadData = async () => {
     try {
-      const [locs, bxs, itms] = await Promise.all([
+      const [locs, bxs, itms, statsRes, actRes] = await Promise.all([
         getLocations(),
         getBoxes(),
-        getItems()
+        getItems(),
+        getStats(),
+        getActivity()
       ]);
       setLocations(locs.data || []);
       setBoxes(bxs.data || []);
       setItems(itms.data || []);
+      setStats(statsRes.data || null);
+      setActivity(actRes.data || []);
     } catch (error) {
       console.error("Error cargando datos:", error);
     } finally {
@@ -35,18 +46,33 @@ function App() {
   }, []);
 
   return (
-    <div className="px-6 pt-8 lg:pt-12 max-w-7xl mx-auto animate-cozy">
-      {/* Header Superior (Solo Mobile) */}
-      <header className="flex justify-between items-start mb-10 lg:hidden">
+    <div className="px-6 pt-8 lg:pt-12 max-w-7xl mx-auto animate-cozy pb-12 relative">
+      <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+
+      {/* Header Superior */}
+      <header className="flex justify-between items-start mb-10">
         <div>
           <h1 className="text-3xl font-extrabold text-stone-800 tracking-tight">Kajas</h1>
           <p className="text-stone-400 font-medium mt-1">Hola, {user.nombre || 'Usuario'}</p>
         </div>
         <div className="flex gap-3">
-          <Link to="/notifications" className="p-3 bg-white rounded-2xl shadow-cozy text-stone-400 hover:text-orange-500 transition-colors">
+          <button 
+            onClick={() => setIsSearchOpen(true)} 
+            className="p-3 bg-stone-800 text-white rounded-2xl shadow-xl hover:bg-stone-700 transition-colors flex items-center gap-2 font-bold"
+          >
+            <Search size={22} /> <span className="hidden md:inline">Buscar</span>
+          </button>
+          <button 
+            onClick={toggleTheme}
+            className="p-3 bg-white dark:bg-stone-800 rounded-2xl shadow-cozy text-stone-400 hover:text-orange-500 transition-colors hidden md:flex"
+            title="Cambiar tema"
+          >
+            {isDark ? <Sun size={22} /> : <Moon size={22} />}
+          </button>
+          <Link to="/notifications" className="p-3 bg-white rounded-2xl shadow-cozy text-stone-400 hover:text-orange-500 transition-colors hidden md:flex">
             <Bell size={22} />
           </Link>
-          <Link to="/settings" className="p-3 bg-white rounded-2xl shadow-cozy text-stone-400 hover:text-orange-500 transition-colors">
+          <Link to="/settings" className="p-3 bg-white rounded-2xl shadow-cozy text-stone-400 hover:text-orange-500 transition-colors hidden md:flex">
             <Settings size={22} />
           </Link>
         </div>
@@ -58,23 +84,61 @@ function App() {
         <div className="lg:w-1/3 space-y-10">
           <section>
             <h2 className="text-xl font-extrabold text-stone-800 mb-6 hidden lg:block">Tu Almacén</h2>
-            <div className="grid grid-cols-3 lg:grid-cols-1 gap-4">
-              {[
-                { label: 'Cajas', val: boxes.length, icon: Package, color: 'bg-blue-50 text-blue-500', path: '/boxes' },
-                { label: 'Objetos', val: items.length, icon: Box, color: 'bg-indigo-50 text-indigo-500', path: '/items' },
-                { label: 'Lugares', val: locations.length, icon: MapPin, color: 'bg-emerald-50 text-emerald-500', path: '/locations' },
-              ].map((stat, i) => (
-                <Link key={i} to={stat.path} className="bg-white p-5 rounded-[2rem] shadow-cozy flex lg:flex-row flex-col items-center gap-4 border border-white hover:border-orange-100 transition-all">
-                  <div className={`p-4 ${stat.color} rounded-2xl`}>
-                    <stat.icon size={28} />
+              {stats && stats.totalValue > 0 && (
+                <div className="bg-stone-800 text-white p-6 rounded-[2rem] shadow-xl mb-4 relative overflow-hidden group">
+                  <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all"></div>
+                  <span className="text-xs font-bold text-stone-400 uppercase tracking-widest block mb-1">Valor Total</span>
+                  <div className="text-3xl font-black">{stats.totalValue.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-3 lg:grid-cols-1 gap-4">
+                {[
+                  { label: 'Cajas', val: boxes.length, icon: Package, color: 'bg-blue-50 text-blue-500', path: '/boxes' },
+                  { label: 'Objetos', val: items.length, icon: Box, color: 'bg-indigo-50 text-indigo-500', path: '/items' },
+                  { label: 'Lugares', val: locations.length, icon: MapPin, color: 'bg-emerald-50 text-emerald-500', path: '/locations' },
+                ].map((stat, i) => (
+                  <Link key={i} to={stat.path} className="bg-white p-5 rounded-[2rem] shadow-cozy flex lg:flex-row flex-col items-center gap-4 border border-white hover:border-orange-100 transition-all">
+                    <div className={`p-4 ${stat.color} rounded-2xl`}>
+                      <stat.icon size={28} />
+                    </div>
+                    <div className="flex flex-col items-center lg:items-start">
+                      <span className="text-2xl font-black text-stone-800 leading-tight">{stat.val}</span>
+                      <span className="text-[11px] font-bold text-stone-400 uppercase tracking-widest">{stat.label}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {stats && stats.itemsByLocation?.length > 0 && (
+                <div className="bg-white p-5 rounded-[2rem] shadow-cozy border border-white mt-4 hidden lg:block">
+                  <span className="text-[11px] font-bold text-stone-400 uppercase tracking-widest block mb-4 text-center">Distribución</span>
+                  <div className="h-40">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={stats.itemsByLocation}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={35}
+                          outerRadius={55}
+                          paddingAngle={5}
+                          dataKey="value"
+                          stroke="none"
+                        >
+                          {stats.itemsByLocation.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={['#f97316', '#6366f1', '#10b981', '#f43f5e', '#8b5cf6', '#eab308'][index % 6]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}
+                          itemStyle={{ color: '#292524', fontWeight: 'bold' }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
                   </div>
-                  <div className="flex flex-col items-center lg:items-start">
-                    <span className="text-2xl font-black text-stone-800 leading-tight">{stat.val}</span>
-                    <span className="text-[11px] font-bold text-stone-400 uppercase tracking-widest">{stat.label}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                </div>
+              )}
           </section>
 
           {/* Quick Actions (Desktop Sidebar Style) */}
@@ -121,7 +185,7 @@ function App() {
                     <div className="aspect-square bg-amber-50 rounded-2xl mb-4 overflow-hidden relative">
                       {box.foto_url ? (
                         <img 
-                          src={box.foto_url} 
+                          src={getImageUrl(box.foto_url)} 
                           alt={box.nombre}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         />
@@ -149,6 +213,38 @@ function App() {
                 <Link to="/add-box" className="btn-primary mt-8">Crear mi primera caja</Link>
               </div>
             )}
+          </section>
+
+          {/* Activity Log Section */}
+          <section className="mt-12">
+            <div className="flex justify-between items-end mb-6">
+              <h2 className="text-xl font-extrabold text-stone-800 flex items-center gap-2">
+                <Activity size={24} className="text-orange-500" /> Historial de Actividad
+              </h2>
+            </div>
+            
+            <div className="bg-white rounded-[2.5rem] p-8 shadow-cozy border border-white">
+              {activity.length > 0 ? (
+                <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-stone-200 before:to-transparent">
+                  {activity.slice(0, 5).map((log, index) => (
+                    <div key={log.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-stone-100 text-stone-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 group-hover:bg-orange-100 group-hover:text-orange-600 transition-colors z-10">
+                        <Bell size={16} />
+                      </div>
+                      <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-2xl border border-stone-100 bg-stone-50 shadow-sm group-hover:border-orange-200 transition-colors">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-stone-800 text-sm">{log.action.replace('_', ' ')}</span>
+                          <span className="text-[10px] text-stone-400 font-bold uppercase">{new Date(log.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <p className="text-sm text-stone-500">{log.details}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-stone-400 text-sm py-4">No hay actividad reciente.</p>
+              )}
+            </div>
           </section>
 
           {/* Quick Actions (Solo Mobile) */}

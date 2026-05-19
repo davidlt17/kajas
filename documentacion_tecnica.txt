@@ -1,0 +1,67 @@
+# DOCUMENTACIÓN TÉCNICA: KAJAS
+# Resumen de arquitectura y funcionamiento del sistema
+
+---------------------------------------------------------
+1. INFRAESTRUCTURA Y COMUNICACIÓN (DOCKER)
+---------------------------------------------------------
+El proyecto está completamente contenedorizado con Docker, lo que garantiza que el entorno de desarrollo sea idéntico al de despliegue.
+
+- Orquestación: Docker Compose gestiona tres servicios: backend (Node.js), frontend (React/Vite) y base de datos (PostgreSQL).
+- Networking: Los contenedores se comunican en una red privada. El backend contacta con la base de datos usando el host 'db' (puerto 5432), mientras que el exterior accede a los servicios por puertos mapeados (5180 para web, 3080 para API, 5480 para DB).
+- Persistencia: Se utiliza un volumen de Docker para los datos de PostgreSQL, asegurando que la información no se borre al reiniciar los contenedores.
+
+---------------------------------------------------------
+2. BASE DE DATOS (POSTGRESQL)
+---------------------------------------------------------
+Se utiliza un esquema relacional con identificadores UUID para mayor seguridad y escalabilidad.
+
+Tablas principales:
+- users: Gestión de usuarios con contraseñas cifradas (bcrypt).
+- locations: Lugares físicos definidos por el usuario (ej: Trastero).
+- boxes: Cajas vinculadas a una ubicación y a un usuario. Contienen el qr_code_id único.
+- items: Objetos individuales almacenados dentro de las cajas.
+
+Relaciones: Jerarquía de 1 a N (Usuario -> Ubicaciones -> Cajas -> Objetos) con borrado en cascada (ON DELETE CASCADE) para mantener la integridad.
+
+---------------------------------------------------------
+3. API Y LÓGICA DE NEGOCIO (BACKEND)
+---------------------------------------------------------
+Construida con Node.js y Express siguiendo principios REST.
+
+- Seguridad (JWT): Implementa autenticación mediante JSON Web Tokens. El middleware 'auth.js' valida el token en cada petición protegida.
+- Aislamiento: Todas las consultas a la base de datos incluyen filtros por 'user_id' extraído del token, garantizando privacidad total entre usuarios.
+- Pool de Conexiones: Uso de 'pg.Pool' para gestionar eficientemente las conexiones a la base de datos y mejorar el tiempo de respuesta.
+
+---------------------------------------------------------
+4. ESTRUCTURA DE RUTAS DE LA API
+---------------------------------------------------------
+El sistema de rutas está organizado en dos niveles para mantener la limpieza y escalabilidad del código.
+
+A. Registro Central (backend/index.js):
+Es el punto de entrada del servidor. Aquí se registran los grandes grupos de rutas y se les asigna un prefijo (ej: /api/boxes). También es donde se aplican los middlewares globales o de grupo como la autenticación.
+
+B. Módulos Específicos (backend/routes/):
+Cada entidad (auth, boxes, locations, items) tiene su propio archivo de rutas. En ellos se definen los verbos HTTP:
+- GET: Para recuperación de datos.
+- POST: Para creación de nuevos registros.
+- PUT: Para actualización de registros existentes.
+- DELETE: Para eliminación.
+
+Estos archivos no contienen lógica de negocio; su única función es mapear una URL y un método con una función específica del 'Controller' correspondiente.
+
+---------------------------------------------------------
+4. LÓGICA DE CÓDIGOS QR
+---------------------------------------------------------
+El sistema vincula objetos físicos con registros digitales mediante una lógica de identificadores únicos.
+
+- Generación: Al crear una caja, el sistema genera un UUID único que actúa como 'qr_code_id'. El frontend genera la imagen del código QR dinámicamente usando la librería 'qrcode.react'.
+- Almacenamiento: No se guardan imágenes de QR en el servidor, solo el identificador alfanumérico en la base de datos.
+- Escaneo: El ScannerView utiliza la cámara y la librería '@zxing/library' para decodificar el ID del QR en tiempo real.
+- Acción: Al detectar el ID, el frontend redirige a la ruta '/boxes/:id', donde se solicita la información de la caja y sus objetos al backend.
+
+---------------------------------------------------------
+5. FRONTEND (REACT + TAILWIND)
+---------------------------------------------------------
+- Arquitectura: Single Page Application (SPA) con React Router para una navegación fluida sin recargas de página.
+- Diseño: Tailwind CSS para una interfaz "cozy", responsiva y moderna.
+- Gestión de Estado: Uso de Hooks (useState, useEffect, useContext) para sincronizar la UI con los datos de la API en tiempo real.

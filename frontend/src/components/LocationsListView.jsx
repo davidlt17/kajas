@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getLocations } from '../api';
+import { getLocations, getImageUrl } from '../api';
 import { Link } from 'react-router-dom';
 import { LocationPlaceholder } from './Placeholders';
 import { MapPin, Plus, ChevronRight, LayoutGrid, List } from 'lucide-react';
@@ -47,7 +47,7 @@ const LocationsListView = () => {
               <div className="w-16 h-16 bg-stone-50 rounded-2xl overflow-hidden flex-shrink-0">
                 {loc.foto_url ? (
                   <img 
-                    src={loc.foto_url} 
+                    src={getImageUrl(loc.foto_url)} 
                     alt={loc.nombre} 
                     className="w-full h-full object-cover" 
                   />

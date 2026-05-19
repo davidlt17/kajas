@@ -17,11 +17,13 @@ import LoginView from './components/LoginView';
 import RegisterView from './components/RegisterView';
 import ProtectedRoute from './components/ProtectedRoute';
 import { NotificationProvider } from './components/NotificationContext';
+import { ThemeProvider } from './components/ThemeContext';
 import './index.css';
 
 const Main = () => (
-  <NotificationProvider>
-    <Router>
+  <ThemeProvider>
+    <NotificationProvider>
+      <Router>
       <Routes>
         <Route path="/login" element={<LoginView />} />
         <Route path="/register" element={<RegisterView />} />
@@ -40,11 +42,11 @@ const Main = () => (
           <Route path="settings" element={<SettingsView />} />
           <Route path="notifications" element={<NotificationsView />} />
           <Route path="items" element={<ItemsListView />} />
-          <Route path="search" element={<SearchView />} />
         </Route>
       </Routes>
     </Router>
   </NotificationProvider>
+  </ThemeProvider>
 );
 
 createRoot(document.getElementById('root')).render(

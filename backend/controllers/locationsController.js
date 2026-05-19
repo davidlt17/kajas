@@ -1,4 +1,5 @@
 const db = require('../db');
+const { logActivity } = require('../utils/logger');
 
 exports.getAllLocations = async (req, res) => {
     try {
@@ -34,6 +35,7 @@ exports.createLocation = async (req, res) => {
             'INSERT INTO locations (nombre, descripcion, foto_url, user_id) VALUES ($1, $2, $3, $4) RETURNING *',
             [nombre, descripcion, foto_url, req.user.id]
         );
+        logActivity(req.user.id, 'CREATE_LOCATION', `Creada la ubicación '${nombre}'`);
         res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error(err);
@@ -49,6 +51,7 @@ exports.updateLocation = async (req, res) => {
             [nombre, descripcion, foto_url, req.params.id, req.user.id]
         );
         if (result.rows.length === 0) return res.status(404).json({ error: 'Ubicación no encontrada' });
+        logActivity(req.user.id, 'UPDATE_LOCATION', `Actualizada la ubicación '${nombre}'`);
         res.json(result.rows[0]);
     } catch (err) {
         console.error(err);
@@ -58,11 +61,15 @@ exports.updateLocation = async (req, res) => {
 
 exports.deleteLocation = async (req, res) => {
     try {
-        const result = await db.query(
-            'DELETE FROM locations WHERE id = $1 AND user_id = $2 RETURNING id',
+        const getResult = await db.query('SELECT nombre FROM locations WHERE id = $1 AND user_id = $2', [req.params.id, req.user.id]);
+        if (getResult.rows.length === 0) return res.status(404).json({ error: 'Ubicación no encontrada' });
+        const locName = getResult.rows[0].nombre;
+
+        await db.query(
+            'DELETE FROM locations WHERE id = $1 AND user_id = $2',
             [req.params.id, req.user.id]
         );
-        if (result.rows.length === 0) return res.status(404).json({ error: 'Ubicación no encontrada' });
+        logActivity(req.user.id, 'DELETE_LOCATION', `Eliminada la ubicación '${locName}'`);
         res.json({ message: 'Ubicación eliminada' });
     } catch (err) {
         console.error(err);
